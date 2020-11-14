@@ -5,34 +5,28 @@ const app = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET
 });
 
-// Listens to incoming messages that contain "hello"
-app.message('hello', async ({ message, say }) => {
-  // say() sends a message to the channel where the event was triggered
-  await say({
-      blocks: [
-          {
-              "type": "section",
-              "text": {
-                  "type": "mrkdwn",
-                  "text": `Hey there <@${message.user}>!`
-              },
-              "accessory": {
-                  "type": "button",
-                  "text": {
-                      "type": "plain_text",
-                      "text": "Click Me"
-                  },
-                  "action_id": "button_click"
-              }
-          }
-      ],
-      "text": `Hey there <@${message.user}>`
-  });
+app.event('app_home_opened', async ({ context, event, say }) => {
+    const history = await app.client.conversations.history({
+        token: context.botToken,
+        channel: event.channel,
+        count: 1,
 });
 
-app.action('button_click', async ({ body, ack, say }) => {
-    await ack();
-    await say(`<@${body.user.id}> clicked the button`)
+    if (history.messages.length > 0) {
+        say({
+        blocks: jsxslack`
+            <Blocks>
+            <Section>
+                <p><b>伝書鳩アプリへようこそ！</b></p>
+                <p>指定した日時に、ユーザーへの伝言を送信します。🕊️</p>
+            </Section>
+            <Actions>
+                <Button name="post" style="primary">伝言を送る...</Button>
+            </Actions>
+            </Blocks>
+        `,
+        });
+    }
 });
 
 (async () => {
