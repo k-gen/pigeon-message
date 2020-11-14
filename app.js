@@ -14,7 +14,7 @@ app.event('app_home_opened', async ({ context, event, say }) => {
         count: 1,
     });
 
-    if (history.messages.length > 0) {
+    if (history.messages.length === 0) {
         say({
         blocks: jsxslack`
             <Blocks>
@@ -29,6 +29,25 @@ app.event('app_home_opened', async ({ context, event, say }) => {
         `,
         });
     }
+});
+
+const modal = (props = {}) => jsxslack`
+    <Modal title="伝言を送る" callbackId="post">
+        <Section>
+            私にお任せ下さい！
+            <Image src="https://source.unsplash.com/ic-13C3QhAI/256x256" alt="鳩" />
+        </Section>
+    </Modal>
+`
+
+app.action('post', ({ ack, body, context }) => {
+    ack();
+
+    app.client.views.open({
+        token: context.botToken,
+        trigger_id: body.trigger_id,
+        view: modal(),
+    });
 });
 
 (async () => {
