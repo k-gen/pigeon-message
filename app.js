@@ -1,4 +1,6 @@
 const { App } = require('@slack/bolt');
+const { jsxslack } = require('@speee-js/jsx-slack');
+require('dotenv').config();
 
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
@@ -10,7 +12,7 @@ app.event('app_home_opened', async ({ context, event, say }) => {
         token: context.botToken,
         channel: event.channel,
         count: 1,
-});
+    });
 
     if (history.messages.length > 0) {
         say({
