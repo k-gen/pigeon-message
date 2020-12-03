@@ -94,6 +94,106 @@ app.action('post', ({ ack, body, context }) => {
     });
 });
 
+app.action(/^(hour|minute)$/, ({ ack, body, context, payload }) => {
+    ack();
+
+    app.client.views.update({
+        token: context.botToken,
+        view_id: body.view.id,
+        view: modal({
+            ...JSON.parse(body.view.private_metadata),
+            [payload.action_id]: payload.selected_option.value,
+        }),
+    });
+});
+
+app.view('post', ({ ack, context, next, view }) => {
+    // バリデーション処理
+    const values = {
+        ...JSON.parse(view.private_metadata),
+        message: view.state.values.message.message.value,
+        users: view.state.values.users.users.selected_users,
+        date: view.state.values.date.date.selected_date,
+    }
+
+    if (values.hour && values.minute) {
+        ack();
+
+        // 次のミドルウェアに値を渡す
+        context.values = values
+        next();
+    } else {
+        ack({
+          response_action: 'update',
+          view: modal({
+            ...JSON.parse(view.private_metadata),
+            timePickerError: '時刻を入力してください。',
+          }),
+        });
+    }
+},
+async ({ context }) => {
+    // 投稿処理
+    const { values } = context;
+    const { date, hour, minute } = values;
+
+    const postAt = new Date(`${date}T${hour.padStart(2, '0')}:${minute.padStart(2, '0')}:00+0900`)  / 1000;
+
+    for (const user of values.users) {
+        let scheduledMessageId;
+
+        try {
+            scheduledMessageId = (await app.client.chat.scheduleMessage({
+                token: context.botToken,
+                channel: user,
+                post_at: postAt,
+                blocks: jsxslack`
+                    <Blocks>
+                        <Section>
+                            <a href="@${values.userId}" /> さんからの伝書をお届けします 🕊️
+                        </Section>
+                        <Divider />
+                        <Section>
+                            <Escape>${values.message}</Escape>
+                        </Section>
+                    </Blocks>
+                `,
+            })).scheduled_message_id;
+        } catch (e) {
+            await app.client.chat.postMessage({
+                token: context.botToken,
+                channel: values.userId,
+                blocks: jsxslack`
+                    <Blocks>
+                        <Section>
+                            おっと！ <a href="@${user}" /> さんへの伝書をお届けできないようです :sob:
+                        </Section>
+                        <Context>
+                            <b>エラー内容：</b><span>${e.message}</span>
+                        </Context>
+                    </Blocks>
+                `
+            });
+            continue
+        }
+
+        await app.client.chat.postMessage({
+            token: context.botToken,
+            channel: values.userId,
+            blocks: jsxslack`
+                <Blocks>
+                    <Section>
+                        <time datetime=${postAt}>{date} {time}</time> に <a href="@${user}" /> さんへ伝書をお届けします 🕊️
+                    </Section>
+                    <Context>
+                        <b>ID:</b><span>${scheduledMessageId}</span>
+                    </Context>
+                </Blocks>
+            `
+        });
+    }
+});
+
 (async () => {
   // Start your app
   await app.start(process.env.PORT || 3000);
