@@ -70,6 +70,15 @@ const modal = props => jsxslack`
 
         <Textarea id="message" name="message" label="伝言" placeholder="伝言をどうぞ…" required />
         <UsersSelect id="users" name="users" label="送付先" multiple required />
+        <ConversationsSelect
+            id="channel"
+            name="channel"
+            label="チャンネル"
+            required
+            include="public im"
+            excludeBotUsers
+            responseUrlEnabled
+        />
         <DatePicker id="date" name="date" label="日付" required />
 
         <${TimePicker}
@@ -85,6 +94,16 @@ const modal = props => jsxslack`
 `
 
 app.action('post', ({ ack, body, context }) => {
+    ack();
+
+    app.client.views.open({
+        token: context.botToken,
+        trigger_id: body.trigger_id,
+        view: modal({ userId: body.user.id }),
+    });
+});
+
+app.shortcut('open_modal', ({ ack, body, context }) => {
     ack();
 
     app.client.views.open({
@@ -113,6 +132,7 @@ app.view('post', ({ ack, context, next, view }) => {
         ...JSON.parse(view.private_metadata),
         message: view.state.values.message.message.value,
         users: view.state.values.users.users.selected_users,
+        channel: view.state.values.channel.channel.selected_conversation,
         date: view.state.values.date.date.selected_date,
     }
 
@@ -145,12 +165,12 @@ async ({ context }) => {
         try {
             scheduledMessageId = (await app.client.chat.scheduleMessage({
                 token: context.botToken,
-                channel: user,
+                channel: values.channel,
                 post_at: postAt,
                 blocks: jsxslack`
                     <Blocks>
                         <Section>
-                            <a href="@${values.userId}" /> さんからの伝書をお届けします 🕊️
+                            <a href="@${values.userId}" /> さんから<a href="@${user}" />さんへの伝書をお届けします 🕊️
                         </Section>
                         <Divider />
                         <Section>
