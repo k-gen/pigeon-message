@@ -170,7 +170,7 @@ async ({ context }) => {
                 blocks: jsxslack`
                     <Blocks>
                         <Section>
-                            <a href="@${values.userId}" /> さんから<a href="@${user}" />さんへの伝書をお届けします 🕊️
+                            <a href="@${user}" />さんへの伝書をお届けします 🕊️
                         </Section>
                         <Divider />
                         <Section>
