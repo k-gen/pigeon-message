@@ -4,7 +4,8 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "sync": "sync-glitch"
   },
   "author": "",
   "license": "ISC",
@@ -12,5 +13,8 @@
     "@slack/bolt": "^2.4.1",
     "@speee-js/jsx-slack": "^2.6.0",
     "dotenv": "^8.2.0"
+  },
+  "devDependencies": {
+    "sync-glitch-cli": "^2.0.1"
   }
 }
