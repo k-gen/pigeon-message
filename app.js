@@ -158,59 +158,60 @@ async ({ context }) => {
     const { date, hour, minute } = values;
 
     const postAt = new Date(`${date}T${hour.padStart(2, '0')}:${minute.padStart(2, '0')}:00+0900`)  / 1000;
+    const messageOption = {
+        token: context.botToken,
+        channel: values.channel,
+        unfurl_links: true,
+        text: ''
+    }
 
     for (const user of values.users) {
         let scheduledMessageId;
 
         try {
-            scheduledMessageId = (await app.client.chat.scheduleMessage({
-                token: context.botToken,
-                channel: values.channel,
-                post_at: postAt,
-                blocks: jsxslack`
-                    <Blocks>
-                        <Section>
-                            <a href="@${user}" />さんへの伝書をお届けします 🕊️
-                        </Section>
-                        <Divider />
-                        <Section>
-                            <Escape>${values.message}</Escape>
-                        </Section>
-                    </Blocks>
-                `,
-            })).scheduled_message_id;
-        } catch (e) {
-            await app.client.chat.postMessage({
-                token: context.botToken,
-                channel: values.userId,
-                blocks: jsxslack`
-                    <Blocks>
-                        <Section>
-                            おっと！ <a href="@${user}" /> さんへの伝書をお届けできないようです :sob:
-                        </Section>
-                        <Context>
-                            <b>エラー内容：</b><span>${e.message}</span>
-                        </Context>
-                    </Blocks>
-                `
-            });
-            continue
-        }
-
-        await app.client.chat.postMessage({
-            token: context.botToken,
-            channel: values.userId,
-            blocks: jsxslack`
+            messageOption.postAt = postAt;
+            messageOption.blocks = jsxslack`
                 <Blocks>
                     <Section>
-                        <time datetime=${postAt}>{date} {time}</time> に <a href="@${user}" /> さんへ伝書をお届けします 🕊️
+                        <a href="@${user}" />さんへの伝書をお届けします 🕊️
+                    </Section>
+                    <Divider />
+                    <Section>
+                        <Escape>${values.message}</Escape>
+                    </Section>
+                </Blocks>
+            `
+            scheduledMessageId = (await app.client.chat.scheduleMessage(messageOption)).scheduled_message_id;
+            delete messageOption.postAt;
+        } catch (e) {
+            messageOption.text = `おっと！ <!${user}> さんへの伝書をお届けできないようです :sob:`,
+            messageOption.blocks = jsxslack`
+                <Blocks>
+                    <Section>
+                        おっと！ <a href="@${user}" /> さんへの伝書をお届けできないようです :sob:
                     </Section>
                     <Context>
-                        <b>ID:</b><span>${scheduledMessageId}</span>
+                        <b>エラー内容：</b><span>${e.message}</span>
                     </Context>
                 </Blocks>
             `
-        });
+            await app.client.chat.postMessage(messageOption);
+            delete messageOption.text;
+            continue
+        }
+
+        messageOption.blocks = jsxslack`
+            <Blocks>
+                <Section>
+                    <time datetime=${postAt}>{date} {time}</time> に <a href="@${user}" /> さんへ伝書をお届けします 🕊️
+                </Section>
+                <Context>
+                    <b>ID:</b><span>${scheduledMessageId}</span>
+                </Context>
+            </Blocks>
+        `
+
+        await app.client.chat.postMessage(messageOption);
     }
 });
 
