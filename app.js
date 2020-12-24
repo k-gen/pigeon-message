@@ -169,7 +169,8 @@ async ({ context }) => {
         let scheduledMessageId;
 
         try {
-            messageOption.postAt = postAt;
+            messageOption.post_at = postAt;
+            messageOption.text = `${values.message}`;
             messageOption.blocks = jsxslack`
                 <Blocks>
                     <Section>
@@ -177,14 +178,16 @@ async ({ context }) => {
                     </Section>
                     <Divider />
                     <Section>
-                        <Escape>${values.message}</Escape>
+                        <Mrkdwn>${values.message}</Markdwn>
                     </Section>
                 </Blocks>
             `
             scheduledMessageId = (await app.client.chat.scheduleMessage(messageOption)).scheduled_message_id;
-            delete messageOption.postAt;
+            delete messageOption.post_at;
+            delete messageOption.text;
         } catch (e) {
             messageOption.text = `おっと！ <!${user}> さんへの伝書をお届けできないようです :sob:`,
+            messageOption.channel = values.userId;
             messageOption.blocks = jsxslack`
                 <Blocks>
                     <Section>
@@ -200,6 +203,7 @@ async ({ context }) => {
             continue
         }
 
+        messageOption.channel = values.userId;
         messageOption.blocks = jsxslack`
             <Blocks>
                 <Section>
