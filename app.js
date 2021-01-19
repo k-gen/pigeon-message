@@ -3,6 +3,8 @@ const { jsxslack } = require('@speee-js/jsx-slack');
 require('dotenv').config();
 
 const app = new App({
+  socketMode: true,
+  appToken: process.env.SLACK_APP_TOKEN,
   token: process.env.SLACK_BOT_TOKEN,
   signingSecret: process.env.SLACK_SIGNING_SECRET
 });
