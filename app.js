@@ -206,6 +206,7 @@ async ({ context }) => {
         }
 
         messageOption.channel = values.userId;
+        messageOption.text = `${values.date} ${values.hour}時${values.minute}分に<@${user}>さんへ伝書をお届けします 🕊️`;
         messageOption.blocks = jsxslack`
             <Blocks>
                 <Section>
