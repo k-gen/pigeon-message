@@ -1,5 +1,6 @@
 const { App } = require('@slack/bolt');
 const { jsxslack } = require('@speee-js/jsx-slack');
+const { dayjs } = require('dayjs/locale/ja');
 require('dotenv').config();
 
 const app = new App({
@@ -160,6 +161,7 @@ async ({ context }) => {
     const { date, hour, minute } = values;
 
     const postAt = new Date(`${date}T${hour.padStart(2, '0')}:${minute.padStart(2, '0')}:00+0900`)  / 1000;
+    const displayDatetimeText = dayjs(`${value.date} ${value.hour}:${value.min}:00`).format('YYYY年MM月DD日 HH:MM:ss')
     const messageOption = {
         token: context.botToken,
         channel: values.channel,
@@ -206,7 +208,7 @@ async ({ context }) => {
         }
 
         messageOption.channel = values.userId;
-        messageOption.text = `${values.date} ${values.hour}時${values.minute}分に<@${user}>さんへ伝書をお届けします 🕊️`;
+        messageOption.text = `${displayDatetimeText}分に<@${user}>さんへ伝書をお届けします 🕊️`;
         messageOption.blocks = jsxslack`
             <Blocks>
                 <Section>
