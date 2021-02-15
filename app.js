@@ -34,26 +34,30 @@ app.event('app_home_opened', async ({ context, event, say }) => {
     }
 });
 
-const options = (count, start, suffix) => {
+const options = (count, start, suffix, current) => {
     return [...Array(count)].map((_, i) => {
         const s = (i + start).toString();
         return jsxslack`
-            <Option value="${s}">${s.padStart(2, '0')}${suffix}</Option>
+            <Option ${s === current ? selected=true : null} value="${s}">${s.padStart(2, '0')}${suffix}</Option>
         `
     });
 };
 
+
+const now = dayjs();
+
+// TODO: dayjs を使って現在時刻を selected にする #15
 const TimePicker = props => jsxslack`
     <Section>
         <b>${props.label}</b>
     </Section>
     <Actions id="${props.id}">
         <Select name="hour" value="${props.hour}" placeholder="時">
-            <Optgroup label="午前">${options(12, 0, '時')}</Optgroup>
-            <Optgroup label="午後">${options(12, 12, '時')}</Optgroup>
+            <Optgroup label="午前">${options(12, 0, '時', now.hour())}</Optgroup>
+            <Optgroup label="午後">${options(12, 12, '時', now.hour())}</Optgroup>
         </Select>
         <Select name="minute" value="${props.minute}" placeholder="分">
-            ${options(60, 0, '分')}
+            ${options(60, 0, '分', now.minute())}
         </Select>
     </Actions>
 
