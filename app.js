@@ -38,7 +38,7 @@ const options = (count, start, suffix, current) => {
     return [...Array(count)].map((_, i) => {
         const s = (i + start).toString();
         return jsxslack`
-            <Option ${s === current ? selected=true : null} value="${s}">${s.padStart(2, '0')}${suffix}</Option>
+            <Option ${s === current ? "selected=true " : ""} value="${s}">${s.padStart(2, '0')}${suffix}</Option>
         `
     });
 };
