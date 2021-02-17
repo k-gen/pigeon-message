@@ -1,6 +1,6 @@
 const { App } = require('@slack/bolt');
 const { jsxslack } = require('@speee-js/jsx-slack');
-const { dayjs } = require('dayjs/locale/ja');
+const dayjs = require('dayjs');
 require('dotenv').config();
 
 const app = new App({
@@ -37,9 +37,15 @@ app.event('app_home_opened', async ({ context, event, say }) => {
 const options = (count, start, suffix, current) => {
     return [...Array(count)].map((_, i) => {
         const s = (i + start).toString();
-        return jsxslack`
-            <Option ${s === current ? "selected=true " : ""} value="${s}">${s.padStart(2, '0')}${suffix}</Option>
-        `
+        if (s === current.toString()) {
+            return jsxslack`
+                <Option value="${s}" selected>${s.padStart(2, '0')}${suffix}</Option>
+            `
+        } else {
+            return jsxslack`
+                <Option value="${s}">${s.padStart(2, '0')}${suffix}</Option>
+            `
+        }
     });
 };
 
