@@ -51,8 +51,6 @@ const options = (count, start, suffix, current) => {
 };
 
 
-// const now = dayjs();
-
 // TODO: dayjs を使って現在時刻を selected にする #15
 const TimePicker = props => jsxslack`
     <Section>
@@ -69,10 +67,10 @@ const TimePicker = props => jsxslack`
     </Actions>
 
     <!-- error message -->
-    ${props.error & jsxslack`<Context>:warning: <b>${props.error}</b></Context>`}
+    ${props.error && jsxslack`<Context>:warning: <b>${props.error}</b></Context>`}
 
-    <Input type="hidden" name="hour" value="${props.hour}" />
-    <Input type="hidden" name="minute" value="${props.minute}" />
+    <Input type="hidden" name="hour" value="${props.hour ? props.hour : dayjs().hour().toString()}" />
+    <Input type="hidden" name="minute" value="${props.minute ? props.minute : dayjs().hour().toString()}" />
 `
 
 const modal = props => jsxslack`
@@ -93,7 +91,7 @@ const modal = props => jsxslack`
             excludeBotUsers
             responseUrlEnabled
         />
-        <DatePicker id="date" name="date" label="日付" required />
+        <DatePicker id="date" name="date" label="日付" initialDate="${dayjs().toDate()}" required />
 
         <${TimePicker}
             id="time"
@@ -172,7 +170,7 @@ async ({ context }) => {
     const { date, hour, minute } = values;
 
     const postAt = new Date(`${date}T${hour.padStart(2, '0')}:${minute.padStart(2, '0')}:00+0900`)  / 1000;
-    const displayDatetimeText = dayjs(`${values.date} ${values.hour}:${values.minute}:00`).format('YYYY年MM月DD日 HH:MM:ss')
+    const displayDatetimeText = dayjs(`${values.date} ${values.hour}:${values.minute}:00`).format('YYYY年MM月DD日 HH:mm:ss')
     const messageOption = {
         token: context.botToken,
         channel: values.channel,
