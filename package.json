@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
+    "start": "node --require dotenv/config --inspect=localhost:9229 --experimental-modules app.js",
     "sync": "sync-glitch"
   },
   "author": "",
@@ -12,6 +12,7 @@
   "dependencies": {
     "@slack/bolt": "^3.0.0",
     "@speee-js/jsx-slack": "^2.6.0",
+    "dayjs": "^1.10.4",
     "dotenv": "^8.2.0"
   },
   "devDependencies": {

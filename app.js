@@ -1,12 +1,14 @@
-const { App } = require('@slack/bolt');
+const { App, LogLevel } = require('@slack/bolt');
 const { jsxslack } = require('@speee-js/jsx-slack');
+const dayjs = require('dayjs');
 require('dotenv').config();
 
 const app = new App({
   socketMode: process.env.APP_ENV === 'local' ? true : false,
   appToken: process.env.SLACK_APP_TOKEN,
   token: process.env.SLACK_BOT_TOKEN,
-  signingSecret: process.env.SLACK_SIGNING_SECRET
+  signingSecret: process.env.SLACK_SIGNING_SECRET,
+  logLevel: LogLevel.DEBUG,
 });
 
 app.event('app_home_opened', async ({ context, event, say }) => {
@@ -33,34 +35,42 @@ app.event('app_home_opened', async ({ context, event, say }) => {
     }
 });
 
-const options = (count, start, suffix) => {
+const options = (count, start, suffix, current) => {
     return [...Array(count)].map((_, i) => {
         const s = (i + start).toString();
-        return jsxslack`
-            <Option value="${s}">${s.padStart(2, '0')}${suffix}</Option>
-        `
+        if (s === current.toString()) {
+            return jsxslack`
+                <Option value="${s}" selected>${s.padStart(2, '0')}${suffix}</Option>
+            `
+        } else {
+            return jsxslack`
+                <Option value="${s}">${s.padStart(2, '0')}${suffix}</Option>
+            `
+        }
     });
 };
 
+
+// TODO: dayjs を使って現在時刻を selected にする #15
 const TimePicker = props => jsxslack`
     <Section>
         <b>${props.label}</b>
     </Section>
     <Actions id="${props.id}">
         <Select name="hour" value="${props.hour}" placeholder="時">
-            <Optgroup label="午前">${options(12, 0, '時')}</Optgroup>
-            <Optgroup label="午後">${options(12, 12, '時')}</Optgroup>
+            <Optgroup label="午前">${options(12, 0, '時', dayjs().hour())}</Optgroup>
+            <Optgroup label="午後">${options(12, 12, '時', dayjs().hour())}</Optgroup>
         </Select>
         <Select name="minute" value="${props.minute}" placeholder="分">
-            ${options(60, 0, '分')}
+            ${options(60, 0, '分', dayjs().minute())}
         </Select>
     </Actions>
 
     <!-- error message -->
-    ${props.error & jsxslack`<Context>:warning: <b>${props.error}</b></Context>`}
+    ${props.error && jsxslack`<Context>:warning: <b>${props.error}</b></Context>`}
 
-    <Input type="hidden" name="hour" value="${props.hour}" />
-    <Input type="hidden" name="minute" value="${props.minute}" />
+    <Input type="hidden" name="hour" value="${props.hour ? props.hour : dayjs().hour().toString()}" />
+    <Input type="hidden" name="minute" value="${props.minute ? props.minute : dayjs().hour().toString()}" />
 `
 
 const modal = props => jsxslack`
@@ -81,7 +91,7 @@ const modal = props => jsxslack`
             excludeBotUsers
             responseUrlEnabled
         />
-        <DatePicker id="date" name="date" label="日付" required />
+        <DatePicker id="date" name="date" label="日付" initialDate="${dayjs().toDate()}" required />
 
         <${TimePicker}
             id="time"
@@ -160,6 +170,7 @@ async ({ context }) => {
     const { date, hour, minute } = values;
 
     const postAt = new Date(`${date}T${hour.padStart(2, '0')}:${minute.padStart(2, '0')}:00+0900`)  / 1000;
+    const displayDatetimeText = dayjs(`${values.date} ${values.hour}:${values.minute}:00`).format('YYYY年MM月DD日 HH:mm:ss')
     const messageOption = {
         token: context.botToken,
         channel: values.channel,
@@ -206,7 +217,7 @@ async ({ context }) => {
         }
 
         messageOption.channel = values.userId;
-        messageOption.text = `${values.date} ${values.hour}時${values.minute}分に<@${user}>さんへ伝書をお届けします 🕊️`;
+        messageOption.text = `${displayDatetimeText}に<@${user}>さんへ伝書をお届けします 🕊️`;
         messageOption.blocks = jsxslack`
             <Blocks>
                 <Section>
