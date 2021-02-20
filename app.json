@@ -2,20 +2,20 @@
     "name": "pigeon-message",
     "env": {
         "SLACK_BOT_TOKEN": {
-            "generator": "secret"
+            "required": true
         },
         "SLACK_SIGNING_SECRET": {
-            "generator": "secret"
+            "required": true
         },
         "SLACK_APP_TOKEN": {
-            "generator": "secret"
+            "required": false
         }
     },
     "options": {
         "allow-unauthenticated": false,
         "memory": "512Mi",
         "cpu": "1",
-        "port": 80,
+        "port": 8080,
         "http2": false
     }
 }
