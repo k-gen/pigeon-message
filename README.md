@@ -18,6 +18,7 @@ JSX風にSlack block kitが書けるオープンソースライブラリ[jsx-sla
 
 ## SlackAppをインストール
   https://api.slack.com/apps
+  
   ![screenshot4](https://user-images.githubusercontent.com/46369030/108592623-1e05c680-73b2-11eb-9d9e-05abfb7da0a8.png)
 
 ## .envファイルに各種tokenを記載
@@ -35,9 +36,11 @@ JSX風にSlack block kitが書けるオープンソースライブラリ[jsx-sla
 # How to use / 使い方
 
 ショートカットから伝書鳩を呼び出して下さい
+
 ![screenshot5](https://user-images.githubusercontent.com/46369030/108593133-53f87a00-73b5-11eb-98e7-b77d5c93f0d7.png)
 
 あとは送付先や日時を設定したら鳩があなたに代わってメッセージを送ってくれます
+
 ![screenshot6](https://user-images.githubusercontent.com/46369030/108593164-7a1e1a00-73b5-11eb-9d59-7ad8933337f9.png)
 
 # Notes / 備考
