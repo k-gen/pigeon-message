@@ -1,0 +1,24 @@
+{
+    "name": "pigeon-message",
+    "env": {
+        "SLACK_BOT_TOKEN": {
+            "required": true
+        },
+        "SLACK_SIGNING_SECRET": {
+            "required": true
+        },
+        "SLACK_APP_TOKEN": {
+            "required": false
+        },
+        "TZ": {
+            "value": "Asia/Tokyo"
+        }
+    },
+    "options": {
+        "allow-unauthenticated": false,
+        "memory": "512Mi",
+        "cpu": "1",
+        "port": 8080,
+        "http2": false
+    }
+}
