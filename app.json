@@ -9,6 +9,9 @@
         },
         "SLACK_APP_TOKEN": {
             "required": false
+        },
+        "TZ": {
+            "value": "Asia/Tokyo"
         }
     },
     "options": {
