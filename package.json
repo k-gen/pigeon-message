@@ -17,6 +17,7 @@
     "dotenv": "^8.2.0"
   },
   "devDependencies": {
-    "sync-glitch-cli": "^2.0.1"
+    "sync-glitch-cli": "^2.0.1",
+    "typescript": "^4.2.2"
   }
 }

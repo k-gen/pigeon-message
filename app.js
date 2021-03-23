@@ -81,7 +81,7 @@ const modal = props => jsxslack`
         </Section>
 
         <Textarea id="message" name="message" label="伝言" placeholder="伝言をどうぞ…" required />
-        <UsersSelect id="users" name="users" label="送付先" multiple required />
+        <UsersSelect id="users" name="users" label="送付先" multiple />
         <ConversationsSelect
             id="channel"
             name="channel"
@@ -175,6 +175,7 @@ async ({ context }) => {
         token: context.botToken,
         channel: values.channel,
         unfurl_links: true,
+        unfurl_media: true,
         text: ''
     }
 
