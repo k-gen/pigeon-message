@@ -1,4 +1,5 @@
-import { App, LogLevel } from '@slack/bolt';
+import { App, LogLevel, SlackActionMiddlewareArgs, AllMiddlewareArgs, BlockAction, StaticSelectAction } from '@slack/bolt';
+import { ChatScheduleMessageArguments } from '@slack/web-api';
 import { jsxslack } from '@speee-js/jsx-slack';
 import dayjs from 'dayjs';
 import * as dotenv from 'dotenv';
@@ -19,7 +20,7 @@ app.event('app_home_opened', async ({ context, event, say }) => {
         count: 1,
     });
 
-    if (history.messages.length === 0) {
+    if (history.response_metadata?.messages?.length === 0 ) {
         say({
         blocks: jsxslack`
             <Blocks>
@@ -32,6 +33,7 @@ app.event('app_home_opened', async ({ context, event, say }) => {
             </Actions>
             </Blocks>
         `,
+        text: ''
         });
     }
 });
@@ -106,8 +108,8 @@ const modal = props => jsxslack`
     </Modal>
 `
 
-app.action('post', ({ ack, body, context }) => {
-    ack();
+app.action('post', async ({ ack, body, context }: SlackActionMiddlewareArgs<BlockAction<StaticSelectAction>> & AllMiddlewareArgs) => {
+    await ack();
 
     app.client.views.open({
         token: context.botToken,
@@ -116,8 +118,8 @@ app.action('post', ({ ack, body, context }) => {
     });
 });
 
-app.shortcut('open_modal', ({ ack, body, context }) => {
-    ack();
+app.shortcut('open_modal', async ({ ack, body, context }) => {
+    await ack();
 
     app.client.views.open({
         token: context.botToken,
@@ -126,20 +128,20 @@ app.shortcut('open_modal', ({ ack, body, context }) => {
     });
 });
 
-app.action(/^(hour|minute)$/, ({ ack, body, context, payload }) => {
-    ack();
+app.action(/^(hour|minute)$/, async ({ ack, body, context, payload }: SlackActionMiddlewareArgs<BlockAction<StaticSelectAction>> & AllMiddlewareArgs) => {
+    await ack();
 
     app.client.views.update({
         token: context.botToken,
-        view_id: body.view.id,
+        view_id: body.view ? body.view.id : '',
         view: modal({
-            ...JSON.parse(body.view.private_metadata),
+            ...JSON.parse(body.view ? body.view.private_metadata : ''),
             [payload.action_id]: payload.selected_option.value,
         }),
     });
 });
 
-app.view('post', ({ ack, context, next, view }) => {
+ app.view('post', async ({ ack, context, next, view }) => {
     // バリデーション処理
     const values = {
         ...JSON.parse(view.private_metadata),
@@ -154,7 +156,7 @@ app.view('post', ({ ack, context, next, view }) => {
 
         // 次のミドルウェアに値を渡す
         context.values = values
-        next();
+        next ? next() : null;
     } else {
         ack({
           response_action: 'update',
@@ -170,20 +172,21 @@ async ({ context }) => {
     const { values } = context;
     const { date, hour, minute } = values;
 
-    const postAt = new Date(`${date}T${hour.padStart(2, '0')}:${minute.padStart(2, '0')}:00+0900`)  / 1000;
+    const postAt = new Date(`${date}T${hour.padStart(2, '0')}:${minute.padStart(2, '0')}:00+0900`).getTime()  / 1000;
     const displayDatetimeText = dayjs(`${values.date} ${values.hour}:${values.minute}:00`).format('YYYY年MM月DD日 HH:mm:ss')
-    const messageOption = {
+    const messageOption: ChatScheduleMessageArguments = {
         token: context.botToken,
         channel: values.channel,
         unfurl_links: true,
-        text: ''
+        text: '',
+        post_at: ''
     }
 
     for (const user of values.users) {
-        let scheduledMessageId;
+        let scheduledMessageId: unknown;
 
         try {
-            messageOption.post_at = postAt;
+            messageOption.post_at = postAt.toString();
             messageOption.text = `${values.message}`;
             messageOption.blocks = jsxslack`
                 <Blocks>
@@ -197,8 +200,6 @@ async ({ context }) => {
                 </Blocks>
             `
             scheduledMessageId = (await app.client.chat.scheduleMessage(messageOption)).scheduled_message_id;
-            delete messageOption.post_at;
-            delete messageOption.text;
         } catch (e) {
             messageOption.text = `おっと！ <!${user}> さんへの伝書をお届けできないようです :sob:`,
             messageOption.channel = values.userId;
@@ -213,7 +214,6 @@ async ({ context }) => {
                 </Blocks>
             `
             await app.client.chat.postMessage(messageOption);
-            delete messageOption.text;
             continue
         }
 
@@ -236,7 +236,7 @@ async ({ context }) => {
 
 (async () => {
   // Start your app
-  await app.start(process.env.PORT || 3000);
+  await app.start(Number(process.env.PORT) || 3000);
 
   console.log('⚡️ Bolt app is running!');
 })();
