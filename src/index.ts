@@ -1,8 +1,8 @@
-import { App, LogLevel } from "@slack/bolt";
-import jsxslack, { Confirm } from "@speee-js/jsx-slack";
+import { jsxslack } from "@speee-js/jsx-slack";
+import { ChatScheduleMessageArguments } from "@slack/web-api";
 import dayjs from "dayjs";
-import { app } from "./app";
-import { Config } from "./config";
+import { app } from "./app/index.js";
+import { Config } from "./config.js";
 
 const BoltApp = app;
 
@@ -13,7 +13,7 @@ BoltApp.event("app_home_opened", async ({ context, event, say }) => {
     count: 1,
   });
 
-  if (history?messages.length === 0) {
+  if (history.response_metadata?.messages?.length === 0) {
     say({
       blocks: jsxslack`
             <Blocks>
@@ -26,6 +26,7 @@ BoltApp.event("app_home_opened", async ({ context, event, say }) => {
             </Actions>
             </Blocks>
         `,
+      text: "",
     });
   }
 });
@@ -49,7 +50,7 @@ const options = (count, start, suffix, current) => {
 };
 
 // TODO: dayjs を使って現在時刻を selected にする #15
-const TimePicker = props => jsxslack`
+const TimePicker = (props) => jsxslack`
     <Section>
         <b>${props.label}</b>
     </Section>
@@ -87,7 +88,7 @@ const TimePicker = props => jsxslack`
     }" />
 `;
 
-const modal = props => jsxslack`
+const modal = (props) => jsxslack`
     <Modal title="伝言を送る" callbackId="post">
         <Section>
             私にお任せ下さい！
@@ -119,8 +120,8 @@ const modal = props => jsxslack`
     </Modal>
 `;
 
-BoltApp.action("post", ({ ack, body, context }) => {
-  ack();
+BoltApp.action("post", async ({ ack, body, context }) => {
+  await ack();
 
   BoltApp.client.views.open({
     token: context.botToken,
@@ -129,8 +130,8 @@ BoltApp.action("post", ({ ack, body, context }) => {
   });
 });
 
-BoltApp.shortcut("open_modal", ({ ack, body, context }) => {
-  ack();
+BoltApp.shortcut("open_modal", async ({ ack, body, context }) => {
+  await ack();
 
   BoltApp.client.views.open({
     token: context.botToken,
@@ -139,8 +140,8 @@ BoltApp.shortcut("open_modal", ({ ack, body, context }) => {
   });
 });
 
-BoltApp.action(/^(hour|minute)$/, ({ ack, body, context, payload }) => {
-  ack();
+BoltApp.action(/^(hour|minute)$/, async ({ ack, body, context, payload }) => {
+  await ack();
 
   BoltApp.client.views.update({
     token: context.botToken,
@@ -154,7 +155,7 @@ BoltApp.action(/^(hour|minute)$/, ({ ack, body, context, payload }) => {
 
 BoltApp.view(
   "post",
-  ({ ack, context, next, view }) => {
+  async ({ ack, context, next, view }) => {
     // バリデーション処理
     const values = {
       ...JSON.parse(view.private_metadata),
@@ -165,13 +166,13 @@ BoltApp.view(
     };
 
     if (values.hour && values.minute) {
-      ack();
+      await ack();
 
       // 次のミドルウェアに値を渡す
       context.values = values;
       next();
     } else {
-      ack({
+      await ack({
         response_action: "update",
         view: modal({
           ...JSON.parse(view.private_metadata),
@@ -188,23 +189,24 @@ BoltApp.view(
     const postAt =
       new Date(
         `${date}T${hour.padStart(2, "0")}:${minute.padStart(2, "0")}:00+0900`
-      ) / 1000;
+      ).getTime() / 1000;
     const displayDatetimeText = dayjs(
       `${values.date} ${values.hour}:${values.minute}:00`
     ).format("YYYY年MM月DD日 HH:mm:ss");
-    const messageOption = {
+    const messageOption: ChatScheduleMessageArguments = {
       token: context.botToken,
       channel: values.channel,
       unfurl_links: true,
       unfurl_media: true,
       text: "",
+      post_at: "",
     };
 
     for (const user of values.users) {
       let scheduledMessageId;
 
       try {
-        messageOption.post_at = postAt;
+        messageOption.post_at = postAt.toString();
         messageOption.text = `${values.message}`;
         messageOption.blocks = jsxslack`
                 <Blocks>
@@ -220,8 +222,8 @@ BoltApp.view(
         scheduledMessageId = (
           await BoltApp.client.chat.scheduleMessage(messageOption)
         ).scheduled_message_id;
-        delete messageOption.post_at;
-        delete messageOption.text;
+        // delete messageOption.post_at;
+        // delete messageOption.text;
       } catch (e) {
         (messageOption.text = `おっと！ <!${user}> さんへの伝書をお届けできないようです :sob:`),
           (messageOption.channel = values.userId);
@@ -236,7 +238,7 @@ BoltApp.view(
                 </Blocks>
             `;
         await BoltApp.client.chat.postMessage(messageOption);
-        delete messageOption.text;
+        // delete messageOption.text;
         continue;
       }
 
