@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node ./lib/index.js",
     "watch": "tsc -w",
-    "dev": "node --require dotenv/config --inspect=localhost:9229 --experimental-modules app.js",
+    "dev": "node --require dotenv/config --inspect=localhost:9229 --experimental-modules ./lib/index.js",
     "lint": "eslint src/index.ts",
     "lint:fix": "eslint --fix src/index.ts",
     "sync": "sync-glitch"
