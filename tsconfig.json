@@ -13,6 +13,7 @@
     "noImplicitAny": false,
     "sourceMap": true,
     "strict": true,
+    "strictNullChecks": false,
     "baseUrl": "."
   },
   "compileOnSave": true
