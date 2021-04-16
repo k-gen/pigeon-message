@@ -4,7 +4,7 @@ import {
   BlockAction,
   StaticSelectAction,
 } from "@slack/bolt";
-import { jsxslack } from "@speee-js/jsx-slack";
+import { jsxslack } from "jsx-slack";
 import { ChatScheduleMessageArguments } from "@slack/web-api";
 import dayjs from "dayjs";
 import { app } from "./app/index.js";
