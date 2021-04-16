@@ -1,3 +1,9 @@
+import {
+  SlackActionMiddlewareArgs,
+  AllMiddlewareArgs,
+  BlockAction,
+  StaticSelectAction,
+} from "@slack/bolt";
 import { jsxslack } from "@speee-js/jsx-slack";
 import { ChatScheduleMessageArguments } from "@slack/web-api";
 import dayjs from "dayjs";
@@ -120,15 +126,23 @@ const modal = (props) => jsxslack`
     </Modal>
 `;
 
-BoltApp.action("post", async ({ ack, body, context }) => {
-  await ack();
+BoltApp.action(
+  "post",
+  async ({
+    ack,
+    body,
+    context,
+  }: SlackActionMiddlewareArgs<BlockAction<StaticSelectAction>> &
+    AllMiddlewareArgs) => {
+    await ack();
 
-  BoltApp.client.views.open({
-    token: context.botToken,
-    trigger_id: body.trigger_id,
-    view: modal({ userId: body.user.id }),
-  });
-});
+    BoltApp.client.views.open({
+      token: context.botToken,
+      trigger_id: body.trigger_id,
+      view: modal({ userId: body.user.id }),
+    });
+  }
+);
 
 BoltApp.shortcut("open_modal", async ({ ack, body, context }) => {
   await ack();
@@ -140,18 +154,27 @@ BoltApp.shortcut("open_modal", async ({ ack, body, context }) => {
   });
 });
 
-BoltApp.action(/^(hour|minute)$/, async ({ ack, body, context, payload }) => {
-  await ack();
+BoltApp.action(
+  /^(hour|minute)$/,
+  async ({
+    ack,
+    body,
+    context,
+    payload,
+  }: SlackActionMiddlewareArgs<BlockAction<StaticSelectAction>> &
+    AllMiddlewareArgs) => {
+    await ack();
 
-  BoltApp.client.views.update({
-    token: context.botToken,
-    view_id: body.view.id,
-    view: modal({
-      ...JSON.parse(body.view.private_metadata),
-      [payload.action_id]: payload.selected_option.value,
-    }),
-  });
-});
+    BoltApp.client.views.update({
+      token: context.botToken,
+      view_id: body.view.id,
+      view: modal({
+        ...JSON.parse(body.view.private_metadata),
+        [payload.action_id]: payload.selected_option.value,
+      }),
+    });
+  }
+);
 
 BoltApp.view(
   "post",

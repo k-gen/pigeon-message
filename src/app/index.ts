@@ -1,4 +1,4 @@
-import pkg from '@slack/bolt';
+import pkg from "@slack/bolt";
 const { App, LogLevel, ExpressReceiver } = pkg;
 import { Config } from "../config.js";
 

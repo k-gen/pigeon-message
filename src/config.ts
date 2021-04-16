@@ -2,7 +2,7 @@ import * as dotenv from "dotenv";
 
 const config = dotenv.config().parsed!;
 
-Object.keys(config).forEach(key => {
+Object.keys(config).forEach((key) => {
   process.env[key] = config[key];
 });
 
