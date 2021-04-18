@@ -14,7 +14,7 @@ export namespace Config {
     export const SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET as string;
 
     export namespace Bolt {
-      export const SERVE_PORT = parseInt(process.env.PORT || "8080", 10);
+      export const SERVE_PORT = parseInt(process.env.SLACK_PORT || "8080", 10);
       export const DEBUG_USER = process.env.BOLT_DEBUG_USER_ID as string;
     }
   }
