@@ -90,7 +90,7 @@ const TimePicker = (props) => jsxslack`
       props.hour ? props.hour : dayjs().hour().toString()
     }" />
     <Input type="hidden" name="minute" value="${
-      props.minute ? props.minute : dayjs().hour().toString()
+      props.minute ? props.minute : dayjs().minute().toString()
     }" />
 `;
 
