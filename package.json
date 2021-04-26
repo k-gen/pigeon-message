@@ -17,7 +17,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@slack/bolt": "^3.0.0",
+    "@slack/bolt": "^3.3.0",
     "dayjs": "^1.10.4",
     "dotenv": "^8.2.0",
     "jsx-slack": "^3.0.0",
