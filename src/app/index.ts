@@ -7,7 +7,7 @@ export const receiver = new ExpressReceiver({
 });
 
 const args = {
-  socketMode: true,
+  socketMode: Config.General.APP_ENV === Config.General.APP_ENV_TYPE.LOCAL,
   logLevel: LogLevel.DEBUG,
   appToken: Config.Slack.APP_TOKEN,
   token: Config.Slack.BOT_TOKEN,
