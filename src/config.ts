@@ -1,11 +1,3 @@
-import * as dotenv from "dotenv";
-
-const config = dotenv.config().parsed!;
-
-Object.keys(config).forEach((key) => {
-  process.env[key] = config[key];
-});
-
 export namespace Config {
   export namespace Slack {
     export const APP_TOKEN = process.env.SLACK_APP_TOKEN as string;
