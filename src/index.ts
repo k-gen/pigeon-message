@@ -19,8 +19,8 @@ BoltApp.event("app_home_opened", async ({ context, event, say }) => {
     count: 1,
   });
 
-  if (history.response_metadata?.messages?.length === 0) {
-    say({
+  if (history.messages?.length === 0) {
+    await say({
       blocks: jsxslack`
             <Blocks>
             <Section>
@@ -32,7 +32,6 @@ BoltApp.event("app_home_opened", async ({ context, event, say }) => {
             </Actions>
             </Blocks>
         `,
-      text: "",
     });
   }
 });
