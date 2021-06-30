@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "target": "es2015",
+    "module": "esnext",
+    "jsx": "react",
+    "lib": ["es2016", "es2017", "dom"],
+    "moduleResolution": "node",
+    "outDir": "lib",
+    "rootDir": "src",
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "noImplicitAny": false,
+    "sourceMap": true,
+    "strict": true,
+    "strictNullChecks": false,
+    "baseUrl": "."
+  },
+  "compileOnSave": true
+}

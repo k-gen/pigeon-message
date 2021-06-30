@@ -18,7 +18,7 @@ JSX風にSlack block kitが書けるオープンソースライブラリ[jsx-sla
 
 ## SlackAppをインストール
   https://api.slack.com/apps
-  
+
   ![screenshot4](https://user-images.githubusercontent.com/46369030/108592623-1e05c680-73b2-11eb-9d9e-05abfb7da0a8.png)
 
 ## .envファイルに各種tokenを記載
